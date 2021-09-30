@@ -4,6 +4,7 @@ from collections import namedtuple
 from alive_progress import alive_it
 import boto3
 
+user_input_format = namedtuple('user_input', ['src', 'dest'])
 
 class S3Helper:
     def __init__(self):
@@ -51,11 +52,7 @@ class S3Helper:
                 os.makedirs(os.path.dirname(dest_pathname))
             self.s3.download_file(bucket_name, key, dest_pathname)
 
-def driver(user_input):
-    prefix = ""
-    s3_interface = S3Helper()
-    keys, dirs = s3_interface.get_all_objects(user_input.src, prefix)
-    s3_interface.download_object_locally(user_input.src, keys, dirs, user_input.dest)
+
 
 def parse_user_input():
     parser = argparse.ArgumentParser(description="S3 Bucket Downloader")
@@ -66,7 +63,12 @@ def parse_user_input():
     dest = args.destination
     return src, dest
 
+def main(user_input):
+    prefix = ""
+    s3_interface = S3Helper()
+    keys, dirs = s3_interface.get_all_objects(user_input.src, prefix)
+    s3_interface.download_object_locally(user_input.src, keys, dirs, user_input.dest)
+
 if __name__ == '__main__':
-    user_input_format = namedtuple('user_input', ['src', 'dest'])
     user_input = user_input_format._make(parse_user_input())
-    driver(user_input)
+    main(user_input)
